@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TourConnect - Online Tourism Platform</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/components.css">
+    <link rel="stylesheet" href="/styles/pages.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="https://images.pexels.com/photos/346885/pexels-photo-346885.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&crop=face" alt="TourConnect Logo" class="logo">
+                <span class="brand-text">TourConnect</span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#" class="nav-link" onclick="showPage('home')">Home</a>
+                <a href="#" class="nav-link" onclick="showPage('tours')">Browse Tours</a>
+                <a href="#" class="nav-link agency-only" onclick="showPage('manage-tours')" style="display: none;">Manage Tours</a>
+                <a href="#" class="nav-link tourist-only" onclick="showPage('my-bookings')" style="display: none;">My Bookings</a>
+                <a href="#" class="nav-link" onclick="showPage('profile')" id="profileLink" style="display: none;">Profile</a>
+                <a href="#" class="nav-link" onclick="showPage('reports')" id="reportsLink" style="display: none;">Reports</a>
+                <a href="#" class="nav-link" onclick="showAuth('login')" id="loginLink">Login</a>
+                <a href="#" class="nav-link" onclick="showAuth('register')" id="registerLink">Register</a>
+                <a href="#" class="nav-link" onclick="logout()" id="logoutLink" style="display: none;">Logout</a>
+            </div>
+            <div class="nav-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Home Page -->
+        <div id="home-page" class="page active">
+            <section class="hero">
+                <div class="hero-content">
+                    <h1 class="hero-title">Discover Amazing Travel Experiences</h1>
+                    <p class="hero-description">Connect with professional tour guides and agencies to explore the world's most beautiful destinations</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" onclick="showPage('tours')">Browse Tours</button>
+                        <button class="btn btn-outline" onclick="showAuth('register')">Join as Guide</button>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img src="https://images.pexels.com/photos/1051075/pexels-photo-1051075.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Travel Adventure">
+                </div>
+            </section>
+
+            <section class="features">
+                <div class="container">
+                    <h2 class="section-title">Why Choose TourConnect?</h2>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🌟</div>
+                            <h3>Professional Guides</h3>
+                            <p>Verified and experienced tour guides and travel agencies</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📅</div>
+                            <h3>Easy Booking</h3>
+                            <p>Simple and secure booking process with instant confirmation</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">💯</div>
+                            <h3>Quality Assurance</h3>
+                            <p>Read reviews and ratings from verified travelers</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🗺️</div>
+                            <h3>Diverse Destinations</h3>
+                            <p>Explore tours to amazing destinations worldwide</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="popular-tours">
+                <div class="container">
+                    <h2 class="section-title">Featured Destinations</h2>
+                    <p class="section-subtitle">Discover the world's most breathtaking destinations with our curated selection</p>
+                    
+                    <!-- Featured Destinations Cards -->
+                    <div class="featured-destinations" id="featuredDestinations">
+                        <div class="destination-card">
+                            <div class="destination-image">
+                                <img src="https://images.pexels.com/photos/2506923/pexels-photo-2506923.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Santorini, Greece">
+                                <div class="destination-overlay">
+                                    <h3>Santorini, Greece</h3>
+                                    <p>Experience stunning sunsets, white-washed villages, and crystal-clear waters in this iconic Greek island paradise.</p>
+                                    <button class="btn btn-primary" onclick="searchDestination('Santorini')">Explore Tours</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="destination-card">
+                            <div class="destination-image">
+                                <img src="https://images.pexels.com/photos/1450340/pexels-photo-1450340.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Bali, Indonesia">
+                                <div class="destination-overlay">
+                                    <h3>Bali, Indonesia</h3>
+                                    <p>Immerse yourself in tropical beauty, ancient temples, lush rice terraces, and vibrant cultural experiences.</p>
+                                    <button class="btn btn-primary" onclick="searchDestination('Bali')">Explore Tours</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="destination-card">
+                            <div class="destination-image">
+                                <img src="https://images.pexels.com/photos/2901209/pexels-photo-2901209.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Machu Picchu, Peru">
+                                <div class="destination-overlay">
+                                    <h3>Machu Picchu, Peru</h3>
+                                    <p>Journey to the mystical ancient citadel of the Incas, perched high in the Andes mountains.</p>
+                                    <button class="btn btn-primary" onclick="searchDestination('Peru')">Explore Tours</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="destination-card">
+                            <div class="destination-image">
+                                <img src="https://images.pexels.com/photos/1285625/pexels-photo-1285625.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Tokyo, Japan">
+                                <div class="destination-overlay">
+                                    <h3>Tokyo, Japan</h3>
+                                    <p>Discover the perfect blend of traditional culture and modern innovation in Japan's bustling capital city.</p>
+                                    <button class="btn btn-primary" onclick="searchDestination('Tokyo')">Explore Tours</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="destination-card">
+                            <div class="destination-image">
+                                <img src="https://images.pexels.com/photos/1010657/pexels-photo-1010657.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Paris, France">
+                                <div class="destination-overlay">
+                                    <h3>Paris, France</h3>
+                                    <p>Fall in love with the City of Light, featuring world-class museums, romantic architecture, and exquisite cuisine.</p>
+                                    <button class="btn btn-primary" onclick="searchDestination('Paris')">Explore Tours</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Popular Tours Section -->
+                    <div class="popular-tours-section">
+                        <h3 class="subsection-title">Popular Tours Right Now</h3>
+                        <div class="tours-grid" id="popularToursGrid">
+                            <!-- Popular tours will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Tours Page -->
+        <div id="tours-page" class="page">
+            <section class="page-header">
+                <div class="container">
+                    <h1>Browse Tours</h1>
+                    <p>Discover amazing travel experiences from our verified guides and agencies</p>
+                </div>
+            </section>
+
+            <section class="tours-section">
+                <div class="container">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="destinationFilter">Destination:</label>
+                            <select id="destinationFilter" onchange="filterTours()">
+                                <option value="">All Destinations</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="priceFilter">Max Price:</label>
+                            <input type="number" id="priceFilter" placeholder="Enter max price" onchange="filterTours()">
+                        </div>
+                        <div class="filter-group">
+                            <label for="durationFilter">Duration:</label>
+                            <select id="durationFilter" onchange="filterTours()">
+                                <option value="">Any Duration</option>
+                                <option value="1">1 Day</option>
+                                <option value="2-3">2-3 Days</option>
+                                <option value="4-7">4-7 Days</option>
+                                <option value="7+">7+ Days</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="tours-grid" id="toursGrid">
+                        <!-- Tours will be loaded here -->
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Manage Tours Page (Agency/Guide Only) -->
+        <div id="manage-tours-page" class="page">
+            <section class="page-header">
+                <div class="container">
+                    <div class="header-with-action">
+                        <div>
+                            <h1>Manage Tours</h1>
+                            <p>Create and manage your tour packages</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="showCreateTourModal()">
+                            <span>+ Create New Tour</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="manage-section">
+                <div class="container">
+                    <div class="tours-grid" id="manageToursGrid">
+                        <!-- Managed tours will be loaded here -->
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- My Bookings Page (Tourist Only) -->
+        <div id="my-bookings-page" class="page">
+            <section class="page-header">
+                <div class="container">
+                    <h1>My Bookings</h1>
+                    <p>Track your tour bookings and past experiences</p>
+                </div>
+            </section>
+
+            <section class="bookings-section">
+                <div class="container">
+                    <div class="bookings-filters">
+                        <button class="filter-btn active" onclick="filterBookings('all')">All Bookings</button>
+                        <button class="filter-btn" onclick="filterBookings('upcoming')">Upcoming</button>
+                        <button class="filter-btn" onclick="filterBookings('completed')">Completed</button>
+                        <button class="filter-btn" onclick="filterBookings('cancelled')">Cancelled</button>
+                    </div>
+
+                    <div class="bookings-grid" id="bookingsGrid">
+                        <!-- Bookings will be loaded here -->
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profile-page" class="page">
+            <section class="page-header">
+                <div class="container">
+                    <h1>Profile</h1>
+                    <p>Manage your account information</p>
+                </div>
+            </section>
+
+            <section class="profile-section">
+                <div class="container">
+                    <div class="profile-form-container">
+                        <form id="profileForm" class="form">
+                            <div class="form-group">
+                                <label for="profileName">Name *</label>
+                                <input type="text" id="profileName" required>
+                                <span class="error-message"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="profileEmail">Email *</label>
+                                <input type="email" id="profileEmail" required>
+                                <span class="error-message"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="profilePhone">Phone</label>
+                                <input type="tel" id="profilePhone">
+                                <span class="error-message"></span>
+                            </div>
+
+                            <div id="agencyFields" style="display: none;">
+                                <div class="form-group">
+                                    <label for="agencyName">Agency/Company Name *</label>
+                                    <input type="text" id="agencyName">
+                                    <span class="error-message"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="agencyDescription">Description</label>
+                                    <textarea id="agencyDescription" rows="4" placeholder="Tell us about your agency and services..."></textarea>
+                                    <span class="error-message"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="agencyServices">Services Offered</label>
+                                    <textarea id="agencyServices" rows="3" placeholder="List your services (e.g., Adventure Tours, Cultural Tours, etc.)"></textarea>
+                                    <span class="error-message"></span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Reports Page (Agency/Guide Only) -->
+        <div id="reports-page" class="page">
+            <section class="page-header">
+                <div class="container">
+                    <h1>Reports & Analytics</h1>
+                    <p>View your booking statistics and performance metrics</p>
+                </div>
+            </section>
+
+            <section class="reports-section">
+                <div class="container">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalBookings">0</div>
+                            <div class="stat-label">Total Bookings</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalRevenue">$0</div>
+                            <div class="stat-label">Total Revenue</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="averageRating">0.0</div>
+                            <div class="stat-label">Average Rating</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="activeTours">0</div>
+                            <div class="stat-label">Active Tours</div>
+                        </div>
+                    </div>
+
+                    <div class="reports-content">
+                        <div class="report-section">
+                            <h3>Recent Bookings</h3>
+                            <div class="bookings-table" id="recentBookingsTable">
+                                <!-- Recent bookings will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAuthModal()">&times;</span>
+            
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <h2>Login to Your Account</h2>
+                <form id="loginFormElement" class="form">
+                    <div class="form-group">
+                        <label for="loginEmail">Email *</label>
+                        <input type="email" id="loginEmail" required>
+                        <span class="error-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password *</label>
+                        <input type="password" id="loginPassword" required>
+                        <span class="error-message"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+                <p class="auth-switch">
+                    Don't have an account? 
+                    <a href="#" onclick="showAuth('register')">Register here</a>
+                </p>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" class="auth-form" style="display: none;">
+                <h2>Create Your Account</h2>
+                <form id="registerFormElement" class="form">
+                    <div class="form-group">
+                        <label for="registerName">Full Name *</label>
+                        <input type="text" id="registerName" required>
+                        <span class="error-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email *</label>
+                        <input type="email" id="registerEmail" required>
+                        <span class="error-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password *</label>
+                        <input type="password" id="registerPassword" required minlength="6">
+                        <span class="error-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPhone">Phone Number</label>
+                        <input type="tel" id="registerPhone">
+                        <span class="error-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="userType">Account Type *</label>
+                        <select id="userType" required onchange="toggleAgencyFields()">
+                            <option value="">Select Account Type</option>
+                            <option value="tourist">Tourist</option>
+                            <option value="agency">Travel Agency/Guide</option>
+                        </select>
+                        <span class="error-message"></span>
+                    </div>
+
+                    <div id="registerAgencyFields" style="display: none;">
+                        <div class="form-group">
+                            <label for="registerAgencyName">Agency/Company Name *</label>
+                            <input type="text" id="registerAgencyName">
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerAgencyDescription">Agency Description</label>
+                            <textarea id="registerAgencyDescription" rows="3" placeholder="Tell us about your agency..."></textarea>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </form>
+                <p class="auth-switch">
+                    Already have an account? 
+                    <a href="#" onclick="showAuth('login')">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tour Details Modal -->
+    <div id="tourModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" onclick="closeTourModal()">&times;</span>
+            <div id="tourModalContent">
+                <!-- Tour details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Tour Modal -->
+    <div id="createTourModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" onclick="closeCreateTourModal()">&times;</span>
+            <div class="create-tour-content">
+                <h2 id="createTourTitle">Create New Tour</h2>
+                <form id="createTourForm" class="form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tourTitle">Tour Title *</label>
+                            <input type="text" id="tourTitle" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="tourDestination">Destination *</label>
+                            <input type="text" id="tourDestination" required>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tourDescription">Description *</label>
+                        <textarea id="tourDescription" rows="4" required placeholder="Describe your tour package..."></textarea>
+                        <span class="error-message"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tourPrice">Price per Person ($) *</label>
+                            <input type="number" id="tourPrice" min="0" step="0.01" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="tourDuration">Duration (days) *</label>
+                            <input type="number" id="tourDuration" min="1" required>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tourMaxSize">Max Group Size *</label>
+                            <input type="number" id="tourMaxSize" min="1" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="tourCategory">Category</label>
+                            <select id="tourCategory">
+                                <option value="adventure">Adventure</option>
+                                <option value="cultural">Cultural</option>
+                                <option value="wildlife">Wildlife</option>
+                                <option value="relaxation">Relaxation</option>
+                                <option value="food">Food & Culinary</option>
+                                <option value="historical">Historical</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tourIncludes">What's Included</label>
+                        <textarea id="tourIncludes" rows="3" placeholder="List what's included in the tour (e.g., meals, accommodation, transportation)"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tourImageUrl">Image URL</label>
+                        <input type="url" id="tourImageUrl" placeholder="https://example.com/image.jpg">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeCreateTourModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Tour</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div id="reviewModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeReviewModal()">&times;</span>
+            <div class="review-content">
+                <h2>Leave a Review</h2>
+                <form id="reviewForm" class="form">
+                    <div class="form-group">
+                        <label>Rating *</label>
+                        <div class="star-rating" id="starRating">
+                            <span class="star" data-rating="1">★</span>
+                            <span class="star" data-rating="2">★</span>
+                            <span class="star" data-rating="3">★</span>
+                            <span class="star" data-rating="4">★</span>
+                            <span class="star" data-rating="5">★</span>
+                        </div>
+                        <input type="hidden" id="reviewRating" required>
+                        <span class="error-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="reviewComment">Your Review *</label>
+                        <textarea id="reviewComment" rows="4" required placeholder="Share your experience..."></textarea>
+                        <span class="error-message"></span>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeReviewModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/tours.js"></script>
+    <script src="/js/bookings.js"></script>
+    <script src="/js/reviews.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>
