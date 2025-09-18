@@ -1,5 +1,5 @@
 // API Configuration and utilities
-const API_BASE_URL = '/api';
+const API_BASE_URL = CONFIG.BACKEND.API_BASE_URL;
 
 class API {
     constructor() {
@@ -91,7 +91,7 @@ class API {
     }
 
     async getMyTours() {
-        return this.request('/tours/agency/my-tours');
+        return this.request('/tours/agency');
     }
 
     async createTour(tourData) {
@@ -131,11 +131,11 @@ class API {
     }
 
     async getMyBookings() {
-        return this.request('/bookings/my-bookings');
+        return this.request('/bookings');
     }
 
     async getAgencyBookings() {
-        return this.request('/bookings/agency/bookings');
+        return this.request('/bookings');
     }
 
     async updateBookingStatus(id, status) {
@@ -146,11 +146,11 @@ class API {
     }
 
     async getBookingStats() {
-        return this.request('/bookings/agency/stats');
+        return this.request('/bookings/stats');
     }
 
     async getRecentBookings(limit = 10) {
-        return this.request(`/bookings/agency/recent?limit=${limit}`);
+        return this.request(`/bookings/recent?limit=${limit}`);
     }
 
     // Review endpoints
