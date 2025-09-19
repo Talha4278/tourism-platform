@@ -24,6 +24,11 @@ class TourManager {
             const response = await api.getTours(filters);
             if (response.success) {
                 this.tours = response.data.tours;
+                console.log('Loaded tours:', this.tours.length);
+                if (this.tours.length > 0) {
+                    console.log('First tour object:', this.tours[0]);
+                    console.log('First tour keys:', Object.keys(this.tours[0]));
+                }
                 this.displayTours();
             }
         } catch (error) {
@@ -79,7 +84,18 @@ class TourManager {
     }
 
     createTourCard(tour) {
-        const imageUrl = tour.image_url || 'https://images.pexels.com/photos/1371360/pexels-photo-1371360.jpeg?auto=compress&cs=tinysrgb&w=400';
+        console.log('Creating tour card for:', tour.title);
+        console.log('Tour image fields:', {
+            image_url: tour.image_url,
+            imageUrl: tour.imageUrl,
+            image: tour.image,
+            tourImageUrl: tour.tourImageUrl
+        });
+        
+        // Try different possible image field names
+        const imageUrl = tour.image_url || tour.imageUrl || tour.image || tour.tourImageUrl || 'https://images.pexels.com/photos/1371360/pexels-photo-1371360.jpeg?auto=compress&cs=tinysrgb&w=400';
+        console.log('Selected image URL:', imageUrl);
+        
         const agencyName = tour.agency_profiles?.agency_name || tour.users?.name || 'Unknown Agency';
         
         return `
@@ -222,7 +238,7 @@ class TourManager {
     }
 
     createBookingForm(tour) {
-        if (!auth.currentUser || auth.currentUser.user_type !== 'tourist') {
+        if (!auth.currentUser || auth.currentUser.userType !== 'tourist') {
             return '';
         }
 
@@ -234,20 +250,20 @@ class TourManager {
                     <form id="bookingFormElement-${tour.id}">
                         <div class="booking-form-grid">
                             <div class="form-group">
-                                <label for="numberOfPeople">Number of People *</label>
-                                <input type="number" id="numberOfPeople" min="1" max="${tour.max_group_size}" value="1" required>
+                                <label for="numberOfPeople-${tour.id}">Number of People *</label>
+                                <input type="number" id="numberOfPeople-${tour.id}" min="1" max="${tour.max_group_size}" value="1" required>
                                 <span class="error-message"></span>
                             </div>
                             <div class="form-group">
-                                <label for="bookingDate">Preferred Date *</label>
-                                <input type="date" id="bookingDate" min="${new Date().toISOString().split('T')[0]}" required>
+                                <label for="bookingDate-${tour.id}">Preferred Date *</label>
+                                <input type="date" id="bookingDate-${tour.id}" min="${new Date().toISOString().split('T')[0]}" required>
                                 <span class="error-message"></span>
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="specialRequests">Special Requests (Optional)</label>
-                            <textarea id="specialRequests" rows="2" placeholder="Any special requirements or requests..."></textarea>
+                            <label for="specialRequests-${tour.id}">Special Requests (Optional)</label>
+                            <textarea id="specialRequests-${tour.id}" rows="2" placeholder="Any special requirements or requests..."></textarea>
                         </div>
                         
                         <div class="booking-summary">
@@ -258,11 +274,11 @@ class TourManager {
                             </div>
                             <div class="summary-row">
                                 <span>Number of people</span>
-                                <span id="summaryPeople">1</span>
+                                <span id="summaryPeople-${tour.id}">1</span>
                             </div>
                             <div class="summary-row total-row">
                                 <span>Total Amount</span>
-                                <span id="summaryTotal">${formatCurrency(tour.price)}</span>
+                                <span id="summaryTotal-${tour.id}">${formatCurrency(tour.price)}</span>
                             </div>
                         </div>
                     </form>
@@ -303,7 +319,7 @@ class TourManager {
     async bookTour(tourId) {
         if (!auth.requireAuth()) return;
         
-        if (auth.currentUser.user_type !== 'tourist') {
+        if (auth.currentUser.userType !== 'tourist') {
             showAlert('Only tourists can book tours', 'warning');
             return;
         }
@@ -329,9 +345,9 @@ class TourManager {
             footerConfirmBtn.style.display = 'block';
             
             // Setup form calculations
-            const peopleInput = bookingSection.querySelector('#numberOfPeople');
-            const summaryPeople = bookingSection.querySelector('#summaryPeople');
-            const summaryTotal = bookingSection.querySelector('#summaryTotal');
+            const peopleInput = bookingSection.querySelector(`#numberOfPeople-${tourId}`);
+            const summaryPeople = bookingSection.querySelector(`#summaryPeople-${tourId}`);
+            const summaryTotal = bookingSection.querySelector(`#summaryTotal-${tourId}`);
             
             if (peopleInput && summaryPeople && summaryTotal && this.currentTour) {
                 // Remove existing listeners to prevent duplicates
@@ -358,10 +374,19 @@ class TourManager {
     }
 
     async submitBookingFromFooter(tourId) {
+        // Check if user is logged in
+        if (!auth || !auth.currentUser) {
+            showAlert('Please login to make a booking', 'error');
+            if (typeof showAuth === 'function') {
+                showAuth('login');
+            }
+            return;
+        }
+
         // Validate and submit booking directly
-        const numberOfPeople = document.getElementById('numberOfPeople')?.value;
-        const bookingDate = document.getElementById('bookingDate')?.value;
-        const specialRequests = document.getElementById('specialRequests')?.value;
+        const numberOfPeople = document.getElementById(`numberOfPeople-${tourId}`)?.value;
+        const bookingDate = document.getElementById(`bookingDate-${tourId}`)?.value;
+        const specialRequests = document.getElementById(`specialRequests-${tourId}`)?.value;
 
         // Basic validation
         if (!numberOfPeople || !bookingDate) {
@@ -380,19 +405,47 @@ class TourManager {
             confirmBtn.disabled = true;
             confirmBtn.textContent = 'Creating Booking...';
 
+            // Convert booking date to proper format
+            const startDate = new Date(bookingDate).toISOString();
+            const endDate = new Date(new Date(bookingDate).getTime() + 24 * 60 * 60 * 1000).toISOString(); // Add 1 day
+
             const bookingData = {
-                tour_id: tourId,
-                number_of_people: parseInt(numberOfPeople),
-                booking_date: bookingDate,
-                special_requests: specialRequests
+                tourId: tourId,
+                numberOfPeople: parseInt(numberOfPeople),
+                startDate: startDate,
+                endDate: endDate,
+                specialRequests: specialRequests || ''
             };
 
             const response = await api.createBooking(bookingData);
 
-            if (response.success) {
+            // Check if response has booking data (successful booking)
+            if (response && response.id) {
+                console.log('Booking successful, showing alert and redirecting');
+                
+                // Test alert first
+                console.log('Testing showAlert function...');
                 showAlert('Booking created successfully!', 'success');
-                closeTourModal();
-                showPage('my-bookings');
+                
+                // Wait a moment before closing modal and redirecting
+                setTimeout(() => {
+                    console.log('Closing modal and redirecting...');
+                    closeTourModal();
+                    showPage('my-bookings');
+                }, 1000);
+                
+            } else if (response.success) {
+                console.log('Booking successful (success=true), showing alert and redirecting');
+                showAlert('Booking created successfully!', 'success');
+                
+                setTimeout(() => {
+                    closeTourModal();
+                    showPage('my-bookings');
+                }, 1000);
+                
+            } else {
+                console.log('Booking failed:', response);
+                showAlert(response.message || 'Booking creation failed', 'error');
             }
         } catch (error) {
             showAlert(error.message || 'Failed to create booking', 'error');
@@ -408,13 +461,22 @@ class TourManager {
     async submitBooking(event, tourId) {
         event.preventDefault();
         
-        const numberOfPeople = document.getElementById('numberOfPeople').value;
-        const bookingDate = document.getElementById('bookingDate').value;
-        const specialRequests = document.getElementById('specialRequests').value;
+        // Check if user is logged in
+        if (!auth || !auth.currentUser) {
+            showAlert('Please login to make a booking', 'error');
+            if (typeof showAuth === 'function') {
+                showAuth('login');
+            }
+            return;
+        }
+        
+        const numberOfPeople = document.getElementById(`numberOfPeople-${tourId}`).value;
+        const bookingDate = document.getElementById(`bookingDate-${tourId}`).value;
+        const specialRequests = document.getElementById(`specialRequests-${tourId}`).value;
 
         const validation = validateRequired([
-            { id: 'numberOfPeople', required: true, type: 'number', label: 'Number of People' },
-            { id: 'bookingDate', required: true, label: 'Booking Date' }
+            { id: `numberOfPeople-${tourId}`, required: true, type: 'number', label: 'Number of People' },
+            { id: `bookingDate-${tourId}`, required: true, label: 'Booking Date' }
         ]);
 
         if (!validation.isValid) {
@@ -427,16 +489,26 @@ class TourManager {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Creating Booking...';
 
+            // Convert booking date to proper format
+            const startDate = new Date(bookingDate).toISOString();
+            const endDate = new Date(new Date(bookingDate).getTime() + 24 * 60 * 60 * 1000).toISOString(); // Add 1 day
+
             const bookingData = {
-                tour_id: tourId,
-                number_of_people: parseInt(numberOfPeople),
-                booking_date: bookingDate,
-                special_requests: specialRequests
+                tourId: tourId,
+                numberOfPeople: parseInt(numberOfPeople),
+                startDate: startDate,
+                endDate: endDate,
+                specialRequests: specialRequests || ''
             };
 
             const response = await api.createBooking(bookingData);
 
-            if (response.success) {
+            // Check if response has booking data (successful booking)
+            if (response && response.id) {
+                showAlert('Booking created successfully!', 'success');
+                closeTourModal();
+                showPage('my-bookings');
+            } else if (response.success) {
                 showAlert('Booking created successfully!', 'success');
                 closeTourModal();
                 showPage('my-bookings');
@@ -523,20 +595,28 @@ class TourManager {
 
     async handleCreateTour(event) {
         event.preventDefault();
+        console.log('=== TOUR CREATION STARTED ===');
         
-        if (!auth.requireRole('agency')) return;
+        if (!auth.requireRole('agency')) {
+            console.log('Auth check failed - not an agency');
+            return;
+        }
 
         const formData = {
-            title: document.getElementById('tourTitle').value,
-            destination: document.getElementById('tourDestination').value,
-            description: document.getElementById('tourDescription').value,
-            price: document.getElementById('tourPrice').value,
-            duration: document.getElementById('tourDuration').value,
-            max_group_size: document.getElementById('tourMaxSize').value,
-            category: document.getElementById('tourCategory').value,
-            includes: document.getElementById('tourIncludes').value,
-            image_url: document.getElementById('tourImageUrl').value
+            title: document.getElementById('tourTitle').value.trim(),
+            destination: document.getElementById('tourDestination').value.trim(),
+            description: document.getElementById('tourDescription').value.trim(),
+            price: parseFloat(document.getElementById('tourPrice').value),
+            duration: parseInt(document.getElementById('tourDuration').value),
+            maxGroupSize: parseInt(document.getElementById('tourMaxSize').value),
+            category: document.getElementById('tourCategory').value.trim(),
+            inclusions: document.getElementById('tourIncludes').value.trim(),
+            imageUrl: document.getElementById('tourImageUrl').value.trim() || null,
+            itinerary: '',
+            exclusions: ''
         };
+        
+        console.log('Form data collected:', formData);
 
         const validation = validateRequired([
             { id: 'tourTitle', required: true, label: 'Tour Title' },
@@ -547,29 +627,44 @@ class TourManager {
             { id: 'tourMaxSize', required: true, type: 'number', label: 'Max Group Size' }
         ]);
 
+        console.log('Validation result:', validation);
+
         if (!validation.isValid) {
+            console.log('Validation failed:', validation.errors);
             displayFormErrors(validation.errors);
             return;
         }
+
+        console.log('Validation passed, making API call...');
 
         try {
             const submitBtn = event.target.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Creating Tour...';
 
+            console.log('Making API call to create tour...');
             const response = await api.createTour(formData);
+            console.log('API response:', response);
 
-            if (response.success) {
+            // Check if response has an ID (successful creation)
+            if (response && response.id) {
+                console.log('Tour created successfully!');
                 showAlert('Tour created successfully!', 'success');
                 closeCreateTourModal();
                 this.loadMyTours(); // Refresh the tours list
+            } else {
+                console.log('Tour creation failed:', response);
+                showAlert('Failed to create tour', 'error');
             }
         } catch (error) {
+            console.error('Tour creation error:', error);
             showAlert(error.message || 'Failed to create tour', 'error');
         } finally {
             const submitBtn = event.target.querySelector('button[type="submit"]');
+            if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Save Tour';
+            }
         }
     }
 
@@ -598,6 +693,10 @@ class TourManager {
         try {
             const response = await api.getPopularTours();
             if (response.success) {
+                console.log('Popular tours loaded:', response.data.tours.length);
+                if (response.data.tours.length > 0) {
+                    console.log('First popular tour:', response.data.tours[0]);
+                }
                 this.displayPopularTours(response.data.tours);
             }
         } catch (error) {

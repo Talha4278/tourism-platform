@@ -126,36 +126,61 @@ namespace TourismPlatform.API.Services
 
         public async Task<BookingStatsDto> GetBookingStatsAsync(string agencyUserId)
         {
-            var bookingStats = await _context.Bookings
-                .Include(b => b.Tour)
-                .Where(b => b.Tour.AgencyUserId == agencyUserId)
-                .GroupBy(b => 1)
-                .Select(g => new
-                {
-                    TotalBookings = g.Count(),
-                    TotalRevenue = g.Sum(b => b.TotalAmount),
-                    ConfirmedBookings = g.Count(b => b.Status == "confirmed"),
-                    PendingBookings = g.Count(b => b.Status == "pending")
-                })
-                .FirstOrDefaultAsync();
-
-            var averageRating = await _context.Reviews
-                .Include(r => r.Tour)
-                .Where(r => r.Tour.AgencyUserId == agencyUserId)
-                .AverageAsync(r => (double?)r.Rating) ?? 0;
-
-            var activeTours = await _context.Tours
-                .CountAsync(t => t.AgencyUserId == agencyUserId && t.IsActive);
-
-            return new BookingStatsDto
+            try
             {
-                TotalBookings = bookingStats?.TotalBookings ?? 0,
-                TotalRevenue = bookingStats?.TotalRevenue ?? 0,
-                ConfirmedBookings = bookingStats?.ConfirmedBookings ?? 0,
-                PendingBookings = bookingStats?.PendingBookings ?? 0,
-                AverageRating = averageRating,
-                ActiveTours = activeTours
-            };
+                // Get all bookings for tours owned by this agency
+                var agencyBookings = await _context.Bookings
+                    .Include(b => b.Tour)
+                    .Where(b => b.Tour.AgencyUserId == agencyUserId)
+                    .ToListAsync();
+
+                var bookingStats = new
+                {
+                    TotalBookings = agencyBookings.Count(),
+                    TotalRevenue = agencyBookings.Sum(b => b.TotalAmount),
+                    ConfirmedBookings = agencyBookings.Count(b => b.Status == "confirmed"),
+                    PendingBookings = agencyBookings.Count(b => b.Status == "pending")
+                };
+
+                // Handle average rating safely
+                double averageRating = 0;
+                var reviews = await _context.Reviews
+                    .Include(r => r.Tour)
+                    .Where(r => r.Tour.AgencyUserId == agencyUserId)
+                    .ToListAsync();
+                
+                if (reviews.Any())
+                {
+                    averageRating = reviews.Average(r => (double)r.Rating);
+                }
+
+                var activeTours = await _context.Tours
+                    .CountAsync(t => t.AgencyUserId == agencyUserId && t.IsActive);
+
+                return new BookingStatsDto
+                {
+                    TotalBookings = bookingStats.TotalBookings,
+                    TotalRevenue = bookingStats.TotalRevenue,
+                    ConfirmedBookings = bookingStats.ConfirmedBookings,
+                    PendingBookings = bookingStats.PendingBookings,
+                    AverageRating = averageRating,
+                    ActiveTours = activeTours
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log the error and return default stats
+                Console.WriteLine($"Error getting booking stats: {ex.Message}");
+                return new BookingStatsDto
+                {
+                    TotalBookings = 0,
+                    TotalRevenue = 0,
+                    ConfirmedBookings = 0,
+                    PendingBookings = 0,
+                    AverageRating = 0,
+                    ActiveTours = 0
+                };
+            }
         }
 
         public async Task<List<BookingDto>> GetRecentBookingsByAgencyAsync(string agencyUserId, int limit = 10)

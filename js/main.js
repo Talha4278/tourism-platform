@@ -126,21 +126,27 @@ class App {
                     break;
                     
                 case 'manage-tours':
-                    if (auth.currentUser?.user_type === 'agency') {
+                    if (auth.currentUser?.userType === 'agency') {
                         await tourManager.loadMyTours();
                     }
                     break;
                     
                 case 'my-bookings':
-                    if (auth.currentUser?.user_type === 'tourist') {
+                    console.log('Loading My Bookings page...');
+                    console.log('Current user:', auth.currentUser);
+                    if (auth.currentUser?.userType === 'tourist') {
+                        console.log('Loading tourist bookings...');
                         await bookingManager.loadMyBookings();
-                    } else if (auth.currentUser?.user_type === 'agency') {
+                    } else if (auth.currentUser?.userType === 'agency') {
+                        console.log('Loading agency bookings...');
                         await bookingManager.loadAgencyBookings();
+                    } else {
+                        console.log('No valid user type for bookings');
                     }
                     break;
                     
                 case 'reports':
-                    if (auth.currentUser?.user_type === 'agency') {
+                    if (auth.currentUser?.userType === 'agency') {
                         await bookingManager.loadBookingStats();
                         await bookingManager.loadRecentBookings();
                     }

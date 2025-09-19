@@ -34,15 +34,46 @@ class API {
                 ...options,
             });
 
-            const data = await response.json();
+            let data;
+            try {
+                // Handle 204 No Content responses (successful but empty)
+                if (response.status === 204) {
+                    return { success: true, message: 'Operation completed successfully' };
+                }
+                data = await response.json();
+            } catch (jsonError) {
+                // If it's a 204, that's expected for some endpoints
+                if (response.status === 204) {
+                    return { success: true, message: 'Operation completed successfully' };
+                }
+                throw new Error(`Server returned invalid JSON response (Status: ${response.status})`);
+            }
 
             if (!response.ok) {
-                throw new Error(data.message || 'Request failed');
+                // Handle different error response formats
+                let errorMessage = 'Request failed';
+                if (data.message) {
+                    errorMessage = data.message;
+                } else if (data.title) {
+                    errorMessage = data.title;
+                } else if (data.errors) {
+                    // Handle validation errors
+                    const errorDetails = Object.values(data.errors).flat().join(', ');
+                    errorMessage = `Validation failed: ${errorDetails}`;
+                } else if (data.success === false && data.message) {
+                    errorMessage = data.message;
+                } else {
+                    errorMessage = `Request failed with status ${response.status}`;
+                }
+                
+                throw new Error(errorMessage);
             }
 
             return data;
         } catch (error) {
-            console.error('API Request failed:', error);
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                throw new Error('Cannot connect to server. Please make sure the API is running.');
+            }
             throw error;
         }
     }
@@ -145,6 +176,12 @@ class API {
         });
     }
 
+    async cancelBooking(id) {
+        return this.request(`/bookings/${id}/cancel`, {
+            method: 'PUT',
+        });
+    }
+
     async getBookingStats() {
         return this.request('/bookings/stats');
     }
@@ -188,18 +225,37 @@ const api = new API();
 
 // Utility functions
 function showAlert(message, type = 'info') {
+    console.log(`showAlert called: ${message} (${type})`);
+    
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type}`;
     alertDiv.textContent = message;
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        min-width: 300px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        ${type === 'success' ? 'background-color: #28a745;' : ''}
+        ${type === 'error' ? 'background-color: #dc3545;' : ''}
+        ${type === 'warning' ? 'background-color: #ffc107; color: #212529;' : ''}
+        ${type === 'info' ? 'background-color: #17a2b8;' : ''}
+    `;
     
-    const container = document.querySelector('.main-content');
-    container.insertBefore(alertDiv, container.firstChild);
+    document.body.appendChild(alertDiv);
+    console.log('Alert element added to body');
     
     setTimeout(() => {
         if (alertDiv.parentNode) {
             alertDiv.parentNode.removeChild(alertDiv);
+            console.log('Alert removed');
         }
-    }, 5000);
+    }, 3000);
 }
 
 function formatCurrency(amount) {
@@ -210,21 +266,37 @@ function formatCurrency(amount) {
 }
 
 function formatDate(date) {
+    if (!date) return 'No date';
+    
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+        console.warn('Invalid date provided to formatDate:', date);
+        return 'Invalid date';
+    }
+    
     return new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
-    }).format(new Date(date));
+    }).format(dateObj);
 }
 
 function formatDateTime(date) {
+    if (!date) return 'No date';
+    
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+        console.warn('Invalid date provided to formatDateTime:', date);
+        return 'Invalid date';
+    }
+    
     return new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-    }).format(new Date(date));
+    }).format(dateObj);
 }
 
 // Form validation utilities
